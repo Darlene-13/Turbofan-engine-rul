@@ -41,4 +41,55 @@ Dataset: https://www.kaggle.com/datasets/behrad3d/nasa-cmaps
 #### Dataset description
 Engine degradation simulation was carried out using C-MAPSS. Four different were sets simulated under different combinations of operational conditions and fault modes. Records several sensor channels to characterize fault evolution. The data set was provided by the Prognostics CoE at NASA Ames.
 
-                                                                                                                                                                                                                                                           +
+The engine is operating normally at the start of each time series, and develops a fault at some point during the series. In the training set, the fault grows in magnitude until system failure. In the test set, the time series ends some time prior to system failure. 
+
+The objective is to predict the number of remaining operational cycles before failure in the test set, i.e., the number of operational cycles after the last cycle that the engine will continue to operate. Also provided a vector of true Remaining Useful Life (RUL) values for the test data.
+
+**Overview of the Train dataset and test dataset column names** 
+
+| Column | Name           | What                                        | Why                                     | Range                     | Predictive / Interpretation                  |
+|--------|----------------|--------------------------------------------|----------------------------------------|---------------------------|---------------------------------------------|
+| 1      | engine_id      | Unique identifier for each engine (1-100)  | Track which engine the reading belongs | 1-100                     | -                                           |
+| 2      | cycle          | Operational cycle number (time step)       | Track progression through engine life  | 1-192 (varies by engine)  | -                                           |
+| 3      | op_setting_1   | Operational Setting 1 (throttle resolver) | Affects engine performance             | -8 to 0                   | Engine load/speed condition                 |
+| 4      | op_setting_2   | Operational Setting 2 (mach number)       | Flight altitude/speed effect           | -0.009 to 0.84            | Aerodynamic condition                        |
+| 5      | op_setting_3   | Operational Setting 3 (altitude)          | Environmental effect on engine         | 0 to 42000 feet           | Flight altitude                              |
+| 6      | T2             | Temperature Sensor 2 (fan inlet)           | Early indicator of engine health       | ~500-600 °R               | YES – rises before failure                   |
+| 7      | T24            | Temperature Sensor 24 (LPC outlet)         | Compressor performance indicator        | ~600-700 °R               | YES – correlates with wear                   |
+| 8      | T30            | Temperature Sensor 30 (HPC outlet)         | High-pressure compressor health         | ~1300-1700 °R             | YES – critical indicator                     |
+| 9      | T50            | Temperature Sensor 50 (LPT outlet)         | Turbine performance                     | ~1200-1600 °R             | YES – degrades before failure                |
+| 10     | P2             | Pressure Sensor 2 (fan inlet)              | Atmospheric/inlet condition            | ~0-5 psi                  | NO                                           |
+| 11     | P15            | Pressure Sensor 15 (bypass duct)           | Bypass duct condition                   | ~0-50 psi                 | MODERATE                                     |
+| 12     | P30            | Pressure Sensor 30 (HPC outlet)            | High-pressure compressor pressure       | ~200-600 psi              | YES – changes with degradation               |
+| 13     | Nf             | Physical Fan Speed (RPM)                   | Fan operation speed                      | ~1500-3000 RPM            | YES – reduces as engine degrades            |
+| 14     | Nc             | Physical Core Speed (RPM)                  | Core engine speed                        | ~2000-10000 RPM           | YES – highly correlates with failure        |
+| 15     | epr            | Engine Pressure Ratio                        | Overall engine performance metric       | ~1.0-2.5                  | YES – key degradation indicator              |
+| 16     | Ps30           | Static pressure at HPC outlet              | Compressor discharge static pressure    | ~0-500 psi                | YES – changes with wear                      |
+| 17     | phi            | Fuel Flow Ratio                             | Engine load percentage                   | ~0-100%                   | NO                                           |
+| 18     | NRf            | Normalized Fan Speed                        | Fan speed corrected for conditions      | ~0.5-1.0                  | YES – normalized version of Nf               |
+| 19     | NRc            | Normalized Core Speed                        | Core speed corrected for conditions     | ~0.5-1.0                  | YES – normalized version of Nc               |
+| 20     | BPR            | Bypass Pressure Ratio                        | Bypass duct pressure ratio               | ~5-15                     | MODERATE                                     |
+| 21     | farB           | Fuel Air Ratio (Burner)                      | Combustor fuel-air ratio                 | ~0.015-0.030              | YES – changes with degradation               |
+| 22     | htBleed        | Bleed Enthalpy                               | High-pressure compressor bleed valve    | ~300-400 BTU/lbm          | MODERATE                                     |
+| 23     | Nf_dmd         | Demanded Fan Speed                           | Target fan speed (setpoint)             | ~1500-3000 RPM            | NO                                           |
+| 24     | PCNfR_dmd      | Demanded Physical Fan Speed                  | Demanded corrected fan speed             | ~0-100%                   | NO                                           |
+| 25     | W31            | HPC bleed valve position                      | Compressor bleed control                 | ~0-100%                   | MODERATE                                     |
+| 26     | W32            | LPC bleed valve position                      | Compressor bleed control                 | ~0-100%                   | MODERATE                                     |
+
+**Dataset Variants: FD001,FD002,FD003,FD004**
+
+| Dataset | Train trajectories | Test trajectories | Conditions    | Fault Modes         |
+| ------- | ------------------ | ----------------- | ------------- | ------------------- |
+| FD001   | 100                | 100               | 1 (sea level) | 1 (HPC Degradation) |
+| FD002   | 260                | 259               | 6             | 1                   |
+| FD003   | 100                | 100               | 1             | 2 (HPC, Fan)        |
+| FD004   | 248                | 249               | 6             | 2                   |
+
+**Conceptually**
+1. “Trajectories” = engines.
+2. “Conditions” = different operational scenarios.
+3. “Fault modes” = type of degradation that occurs.
+4. **HPC** = High Pressure Compressor
+5. **LPC** = Low Pressure Compressor
+6. **LPT** = Low Pressure Turbine linked to HPC mechanically.
+
